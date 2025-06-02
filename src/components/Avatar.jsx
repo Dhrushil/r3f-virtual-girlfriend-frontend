@@ -108,7 +108,7 @@ let setupMode = false;
 
 export function Avatar(props) {
   const { nodes, materials, scene } = useGLTF(
-    "/models/64f1a714fe61576b46f27ca2.glb"
+    "https://models.readyplayer.me/683d6d3f5a318aa834f7688d.glb"
   );
 
   const { message, onMessagePlayed, chat } = useChat();
@@ -374,5 +374,6 @@ export function Avatar(props) {
   );
 }
 
-useGLTF.preload("/models/64f1a714fe61576b46f27ca2.glb");
+useGLTF.preload("https://models.readyplayer.me/683d6d3f5a318aa834f7688d.glb");
+//useGLTF.preload("/models/64f1a714fe61576b46f27ca2.glb");
 useGLTF.preload("/models/animations.glb");

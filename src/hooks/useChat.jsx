@@ -5,25 +5,59 @@ const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
-  const chat = async (message) => {
-    setLoading(true);
-    const data = await fetch(`${backendUrl}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message }),
-    });
-    const resp = (await data.json()).messages;
-    setMessages((messages) => [...messages, ...resp]);
-    setLoading(false);
-  };
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState();
   const [loading, setLoading] = useState(false);
   const [cameraZoomed, setCameraZoomed] = useState(true);
+
+  const chat = async (message) => {
+    setLoading(true);
+    try {
+      console.log("Sending message to backend:", message);
+      const response = await fetch(`${backendUrl}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      console.log("Received response:", response);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+      }
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        const text = await response.text();
+        console.error("Failed to parse JSON. Response text:", text);
+        throw new Error("Invalid JSON response from server.");
+      }
+
+      console.log("Parsed JSON:", data);
+
+      if (!data.messages || !Array.isArray(data.messages)) {
+        throw new Error("Invalid response format: 'messages' not found");
+      }
+
+      setMessages((prev) => [...prev, ...data.messages]);
+    } catch (error) {
+      console.error("Chat error:", {
+        message: error?.message,
+        stack: error?.stack,
+        full: error,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onMessagePlayed = () => {
-    setMessages((messages) => messages.slice(1));
+    setMessages((prev) => prev.slice(1));
   };
 
   useEffect(() => {
